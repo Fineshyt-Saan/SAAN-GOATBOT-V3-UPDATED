@@ -42,7 +42,7 @@ module.exports = {
     shortDescription: { en: "Search and download Spotify songs" },
     longDescription: { en: "Search for a song on Spotify and download it directly" },
     category: "ANIME & MEDIA",
-    guide: { en: "{pn} <song name>\nExample: /spotify Happy Nation" }
+    guide: { en: "{pn} <song name>\nExample: /spotify As it was" }
   },
 
   onStart: async function ({ api, event, args, message }) {
@@ -134,11 +134,12 @@ module.exports = {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const downloadUrl = `${await getApiBaseUrl()}/api/universaldownloader?url=${encodeURIComponent(trackUrl)}`;
+        const downloadUrl = `${await getApiBaseUrl()}/api/alldl?url=${encodeURIComponent(trackUrl)}`;
         const downloadRes = await axios.get(downloadUrl, { timeout: 30000 });
+        const data = downloadRes.data;
 
-        if (downloadRes.data.status && downloadRes.data.data && downloadRes.data.data.url) {
-          downloadData = downloadRes.data.data;
+        if (data.success && data.audios && data.audios.length > 0) {
+          downloadData = data;
           break;
         } else {
           throw new Error("Failed to get download link");
@@ -157,7 +158,7 @@ module.exports = {
     }
 
     try {
-      const audioLink = downloadData.url;
+      const audioLink = downloadData.audios[0].audiourl;
       const title = downloadData.title || track.title;
       const artist = track.artist || "Unknown";
 
